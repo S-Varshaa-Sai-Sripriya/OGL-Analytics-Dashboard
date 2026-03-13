@@ -45,7 +45,7 @@ Install the following before running:
 ### 1) Open terminal in project folder
 
 ```bash
-cd "d:\Projects\D - OGL Dashboard"
+cd "<location>"
 ```
 
 ### 2) Create a virtual environment (recommended)
