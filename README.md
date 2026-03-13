@@ -17,7 +17,6 @@ D - OGL Dashboard/
 ├── app.py
 ├── requirements.txt
 ├── Dataset/
-│   └── OGL_Consolidated.xlsx
 ├── templates/
 │   └── index.html
 └── README.md
