@@ -203,7 +203,7 @@ In terminal, press:
 **Windows PowerShell:**
 
 ```powershell
-cd "d:\Projects\D - OGL Dashboard"
+cd <location>
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt

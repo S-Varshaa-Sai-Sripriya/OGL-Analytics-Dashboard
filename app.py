@@ -277,8 +277,6 @@ if st.session_state.file_loaded and st.session_state.df is not None:
             st.warning("No valid columns found.")
             columns = df.columns.tolist()
 
-        status_col = find_status_column(columns)
-        
         st.markdown("---")
         
         # Graph type selection - Added Stacked Bar
@@ -340,10 +338,7 @@ if st.session_state.file_loaded and st.session_state.df is not None:
             filter_chain = " → ".join(selected_filters)
             st.caption(f"📊 Grouping: **{filter_chain}**")
 
-        if status_col:
-            st.caption(f"✅ Status split column detected: **{status_col}**")
-        else:
-            st.warning("⚠️ Could not detect `SBU Developer Status` column. Status split will be skipped.")
+        st.caption("✅ Results use only the selected filter fields")
 
         st.markdown("---")
         st.markdown("### 🔍 Additional Filters")
@@ -388,8 +383,6 @@ if st.session_state.file_loaded and st.session_state.df is not None:
                 primary_col = selected_filters[0]
                 # Normalize selected columns used for grouping
                 group_cols = selected_filters.copy()
-                if status_col and status_col not in group_cols:
-                    group_cols.append(status_col)
 
                 for col in group_cols:
                     plot_df[col] = (
@@ -418,14 +411,10 @@ if st.session_state.file_loaded and st.session_state.df is not None:
 
                 # Build stacked/group legend label using selected fields after primary
                 stack_parts = selected_filters[1:]
-                if status_col and status_col not in stack_parts:
-                    stack_parts.append(status_col)
 
                 if stack_parts:
                     agg_df['Stack Series'] = agg_df[stack_parts].astype(str).agg(' - '.join, axis=1)
                     color_col = 'Stack Series'
-                elif status_col and status_col in agg_df.columns:
-                    color_col = status_col
                 else:
                     color_col = None
 
@@ -438,9 +427,6 @@ if st.session_state.file_loaded and st.session_state.df is not None:
                 if color_col and color_col in agg_df.columns:
                     series_values = sorted(agg_df[color_col].unique().tolist())
                     series_color_map = build_series_color_map(series_values)
-                elif status_col and status_col in agg_df.columns:
-                    status_values = sorted(agg_df[status_col].unique().tolist())
-                    series_color_map = build_status_color_map(status_values)
                 else:
                     series_color_map = None
                 
@@ -478,7 +464,7 @@ if st.session_state.file_loaded and st.session_state.df is not None:
                         x=primary_col,
                         y='Count',
                         color=color_col if color_col in agg_df.columns else None,
-                        title=f"Count by {' → '.join(selected_filters)}" + (f" split by {status_col}" if status_col else ""),
+                        title=f"Count by {' → '.join(selected_filters)}",
                         color_discrete_map=series_color_map if series_color_map else None,
                         color_discrete_sequence=colors if not series_color_map else None,
                         barmode='stack' if is_stacked else 'group'
@@ -490,7 +476,7 @@ if st.session_state.file_loaded and st.session_state.df is not None:
                         x='Count',
                         y=primary_col,
                         color=color_col if color_col in agg_df.columns else None,
-                        title=f"Count by {' → '.join(selected_filters)}" + (f" split by {status_col}" if status_col else ""),
+                        title=f"Count by {' → '.join(selected_filters)}",
                         orientation='h',
                         color_discrete_map=series_color_map if series_color_map else None,
                         color_discrete_sequence=colors if not series_color_map else None,
@@ -503,7 +489,7 @@ if st.session_state.file_loaded and st.session_state.df is not None:
                         x=primary_col,
                         y='Count',
                         color=color_col if color_col in agg_df.columns else None,
-                        title=f"Count by {' → '.join(selected_filters)}" + (f" split by {status_col}" if status_col else ""),
+                        title=f"Count by {' → '.join(selected_filters)}",
                         markers=True,
                         color_discrete_map=series_color_map if series_color_map else None,
                         color_discrete_sequence=[SBU_RED] if not series_color_map else None
@@ -515,7 +501,7 @@ if st.session_state.file_loaded and st.session_state.df is not None:
                         x=primary_col,
                         y='Count',
                         color=color_col if color_col in agg_df.columns else None,
-                        title=f"Count by {' → '.join(selected_filters)}" + (f" split by {status_col}" if status_col else ""),
+                        title=f"Count by {' → '.join(selected_filters)}",
                         color_discrete_map=series_color_map if series_color_map else None,
                         color_discrete_sequence=[SBU_RED] if not series_color_map else None
                     )
@@ -527,7 +513,7 @@ if st.session_state.file_loaded and st.session_state.df is not None:
                         x=primary_col,
                         y='Count',
                         color=color_col if color_col in agg_df.columns else None,
-                        title=f"Count by {' → '.join(selected_filters)}" + (f" split by {status_col}" if status_col else ""),
+                        title=f"Count by {' → '.join(selected_filters)}",
                         color_discrete_map=series_color_map if series_color_map else None,
                         color_discrete_sequence=[SBU_RED] if not series_color_map else None
                     )
