@@ -139,6 +139,39 @@ Streamlit usually opens automatically. If not, open:
 
 ---
 
+## Hosting on Streamlit Cloud (share.streamlit.io)
+
+If you deploy this app to [Streamlit Cloud](https://share.streamlit.io), be aware of these important limitations:
+
+- **Data is NOT saved**: Uploaded files and any data processed in the app are **only stored in memory** during your session
+- **Session-based data**: Data persists within a single session but is completely lost when you close the browser or the session expires
+- **No persistent storage by default**: Each app restart clears all data—there is no automatic database or file storage
+- **Each user gets a fresh start**: Every visitor to your shared link starts with a blank slate
+
+### To preserve data on Streamlit Cloud:
+
+Use one of these options to make data persistent:
+
+1. **Cloud Storage** (recommended):
+   - AWS S3, Google Cloud Storage, or Azure Blob Storage
+   - Upload/download data to/from cloud buckets
+
+2. **Database**:
+   - PostgreSQL, MySQL, or Firestore
+   - Store data in a persistent database
+
+3. **Streamlit Secrets**:
+   - Store connection strings in `~/.streamlit/secrets.toml` (local) or Streamlit Cloud's Secrets management
+   - Connect to external databases or APIs
+
+4. **GitHub**:
+   - Commit data files to your repository and read them from there
+   - (Not recommended for large files)
+
+For a local installation (running on your machine), **all data is preserved as long as the app is running**, and you can use local files in the `Dataset/` folder without any additional setup.
+
+---
+
 ## Important notes
 
 - Default file button works only if this file exists:

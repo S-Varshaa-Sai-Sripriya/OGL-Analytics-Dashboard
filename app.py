@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import os
+import base64
 
 # Page configuration
 st.set_page_config(
@@ -70,10 +71,19 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# Header - Clean banner
-st.markdown("""
-    <div class="main-header">
-        <h1 class="main-title">🐺 OGL Dashboard</h1>
+# Header - Banner with mascot inside
+# Read and encode the mascot image
+try:
+    with open("mascot3.png", "rb") as img_file:
+        img_data = base64.b64encode(img_file.read()).decode()
+    img_src = f"data:image/png;base64,{img_data}"
+except:
+    img_src = "mascot3.png"
+
+st.markdown(f"""
+    <div style="background: linear-gradient(135deg, {SBU_RED} 0%, {SBU_DARK_RED} 100%); padding: 20px 40px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(153, 0, 0, 0.3); display: flex; align-items: center; justify-content: center; gap: 20px;">
+        <img src="{img_src}" alt="OGL Mascot" style="width: 120px; height: auto;">
+        <h1 style="color: {SBU_WHITE}; font-size: 2.5em; font-weight: bold; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); letter-spacing: 2px;">OGL Dashboard</h1>
     </div>
 """, unsafe_allow_html=True)
 
@@ -213,25 +223,6 @@ with st.sidebar:
         help="Upload your data file",
         key="file_uploader"
     )
-    
-    st.markdown("---")
-    
-    default_file_path = os.path.join("Dataset", "OGL_Consolidated.xlsx")
-    if st.button("📂 Load Default File", use_container_width=True, key="load_default"):
-        if os.path.exists(default_file_path):
-            with st.spinner("Loading..."):
-                data, sheets = load_file(default_file_path)
-                if data:
-                    st.session_state.data = data
-                    st.session_state.sheets = sheets
-                    st.session_state.current_sheet = sheets[0]
-                    st.session_state.df = data[sheets[0]]
-                    st.session_state.file_loaded = True
-                    st.session_state.file_name = "OGL_Consolidated.xlsx"
-                    st.session_state.generated = False
-        else:
-            st.error("Default file not found!")
-    
     if uploaded_file is not None:
         if st.session_state.file_name != uploaded_file.name:
             with st.spinner("Loading..."):
@@ -467,8 +458,10 @@ if st.session_state.file_loaded and st.session_state.df is not None:
                         title=f"Count by {' → '.join(selected_filters)}",
                         color_discrete_map=series_color_map if series_color_map else None,
                         color_discrete_sequence=colors if not series_color_map else None,
-                        barmode='stack' if is_stacked else 'group'
+                        barmode='stack' if is_stacked else 'group',
+                        text='Count'
                     )
+                    fig.update_traces(textposition='outside')
                 
                 elif agg_df is not None and not agg_df.empty and graph_type in ["barh", "stacked_barh"]:
                     fig = px.bar(
@@ -480,8 +473,10 @@ if st.session_state.file_loaded and st.session_state.df is not None:
                         orientation='h',
                         color_discrete_map=series_color_map if series_color_map else None,
                         color_discrete_sequence=colors if not series_color_map else None,
-                        barmode='stack' if is_stacked else 'group'
+                        barmode='stack' if is_stacked else 'group',
+                        text='Count'
                     )
+                    fig.update_traces(textposition='outside')
                 
                 elif agg_df is not None and not agg_df.empty and graph_type == "line":
                     fig = px.line(
@@ -491,9 +486,11 @@ if st.session_state.file_loaded and st.session_state.df is not None:
                         color=color_col if color_col in agg_df.columns else None,
                         title=f"Count by {' → '.join(selected_filters)}",
                         markers=True,
+                        text='Count',
                         color_discrete_map=series_color_map if series_color_map else None,
                         color_discrete_sequence=[SBU_RED] if not series_color_map else None
                     )
+                    fig.update_traces(textposition='top center')
                 
                 elif agg_df is not None and not agg_df.empty and graph_type == "scatter":
                     fig = px.scatter(
@@ -502,10 +499,11 @@ if st.session_state.file_loaded and st.session_state.df is not None:
                         y='Count',
                         color=color_col if color_col in agg_df.columns else None,
                         title=f"Count by {' → '.join(selected_filters)}",
+                        text='Count',
                         color_discrete_map=series_color_map if series_color_map else None,
                         color_discrete_sequence=[SBU_RED] if not series_color_map else None
                     )
-                    fig.update_traces(marker=dict(size=12))
+                    fig.update_traces(marker=dict(size=12), textposition='top center')
                 
                 elif agg_df is not None and not agg_df.empty and graph_type == "area":
                     fig = px.area(
@@ -517,6 +515,8 @@ if st.session_state.file_loaded and st.session_state.df is not None:
                         color_discrete_map=series_color_map if series_color_map else None,
                         color_discrete_sequence=[SBU_RED] if not series_color_map else None
                     )
+                    # Add markers with values to area chart
+                    fig.update_traces(line=dict(width=2), mode='lines+markers+text', text='Count', textposition='top center')
                 
                 st.session_state.plot_df = agg_df
                 
@@ -577,23 +577,33 @@ if st.session_state.file_loaded and st.session_state.df is not None:
 else:
     st.markdown("""
         <div style="text-align: center; padding: 60px; background: white; border-radius: 15px; margin: 30px auto; max-width: 700px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-            <h2 style="color: #990000;">Welcome to OGL Dashboard! 🐺</h2>
+            <h2 style="color: #990000;">Welcome to OGL Dashboard!</h2>
             <p style="font-size: 1.2em; color: #5E5E5E;">Your interactive data visualization playground</p>
             <div style="background: #f8f8f8; padding: 20px; border-radius: 10px; margin-top: 20px;">
                 <p><strong>👈 Get Started:</strong></p>
                 <p>1. Upload an Excel or CSV file in the sidebar</p>
-                <p>2. Or click <strong>"Load Default File"</strong></p>
+                <p>2. Select your sheet and configure your visualization</p>
             </div>
         </div>
     """, unsafe_allow_html=True)
     
+    st.markdown("### ✨ Key Features")
+    
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown(f'<div style="background:white;padding:20px;border-radius:10px;text-align:center;border-top:4px solid {SBU_RED};"><h4 style="color:{SBU_RED};">📊 Charts</h4><p>Bar, Stacked Bar, Pie & more</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="background:white;padding:20px;border-radius:10px;text-align:center;border-top:4px solid {SBU_RED};"><h4 style="color:{SBU_RED};">📊 Multiple Chart Types</h4><p>Bar, Stacked Bar, Pie, Doughnut, Line, Scatter, Area & more visualization options</p></div>', unsafe_allow_html=True)
     with col2:
-        st.markdown(f'<div style="background:white;padding:20px;border-radius:10px;text-align:center;border-top:4px solid {SBU_RED};"><h4 style="color:{SBU_RED};">🔍 Multi-Filters</h4><p>Up to 5 filter fields</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="background:white;padding:20px;border-radius:10px;text-align:center;border-top:4px solid {SBU_RED};"><h4 style="color:{SBU_RED};">🔍 Advanced Filtering</h4><p>Filter and group by up to 5 different fields to drill down into your data</p></div>', unsafe_allow_html=True)
     with col3:
-        st.markdown(f'<div style="background:white;padding:20px;border-radius:10px;text-align:center;border-top:4px solid {SBU_RED};"><h4 style="color:{SBU_RED};">📁 Multi-Sheet</h4><p>Excel multi-sheet support</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="background:white;padding:20px;border-radius:10px;text-align:center;border-top:4px solid {SBU_RED};"><h4 style="color:{SBU_RED};">📁 Multi-Sheet Support</h4><p>Load and analyze data from Excel multi-sheet files</p></div>', unsafe_allow_html=True)
+    
+    col4, col5, col6 = st.columns(3)
+    with col4:
+        st.markdown(f'<div style="background:white;padding:20px;border-radius:10px;text-align:center;border-top:4px solid {SBU_RED};"><h4 style="color:{SBU_RED};">📤 Easy Upload</h4><p>Upload Excel (.xlsx, .xls) or CSV files directly</p></div>', unsafe_allow_html=True)
+    with col5:
+        st.markdown(f'<div style="background:white;padding:20px;border-radius:10px;text-align:center;border-top:4px solid {SBU_RED};"><h4 style="color:{SBU_RED};">✅ Data Export</h4><p>Export filtered results and line items for further analysis</p></div>', unsafe_allow_html=True)
+    with col6:
+        st.markdown(f'<div style="background:white;padding:20px;border-radius:10px;text-align:center;border-top:4px solid {SBU_RED};"><h4 style="color:{SBU_RED};">💾 Instant Results</h4><p>Generate visualizations in real-time as you configure your data</p></div>', unsafe_allow_html=True)
 
 st.markdown("---")
 st.markdown(f'<div style="text-align:center;color:{SBU_GRAY};"><p>🐺 <strong>OGL Dashboard</strong> | Stony Brook University | Go Seawolves! 🔴</p></div>', unsafe_allow_html=True)
