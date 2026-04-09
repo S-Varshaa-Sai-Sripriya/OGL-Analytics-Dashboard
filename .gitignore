@@ -210,3 +210,4 @@ marimo/_lsp/
 __marimo__/
 *.png
 test_venv
+.vscode/
